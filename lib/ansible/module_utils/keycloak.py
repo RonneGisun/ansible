@@ -44,6 +44,11 @@ URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_CLIENTTEMPLATE = "{url}/admin/realms/{realm}/client-templates/{id}"
 URL_CLIENTTEMPLATES = "{url}/admin/realms/{realm}/client-templates"
 
+URL_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/{target}s/{id}/scope-mappings"
+URL_CLIENT_SCOPE_MAPPINGS_CLIENT = "{url}/admin/realms/{realm}/{target}s/{id}/scope-mappings/clients/{client}"
+URL_CLIENT_SCOPE_MAPPINGS_CLIENT_AVAILABLE = "{url}/admin/realms/{realm}/{target}s/{id}/scope-mappings/clients/{client}/available"
+URL_CLIENT_SCOPE_MAPPINGS_REALM = "{url}/admin/realms/{realm}/{target}s/{id}/scope-mappings/realm"
+URL_CLIENT_SCOPE_MAPPINGS_REALM_AVAILABLE = "{url}/admin/realms/{realm}/{target}s/{id}/scope-mappings/realm/available"
 
 def keycloak_argument_spec():
     """
@@ -338,4 +343,117 @@ class KeycloakAPI(object):
                             validate_certs=self.validate_certs)
         except Exception as e:
             self.module.fail_json(msg='Could not delete client template %s in realm %s: %s'
+                                      % (id, realm, str(e)))
+
+    def get_scope_mappings(self, id, target='client', realm='master'):
+        """
+        Get scope mappings for client or client template
+
+        :param id: id of client or client template
+        :param target: either client or client-template
+        :param realm: realm of the client or client template
+        :return: dict of mappings with keys 'clientMappings' and 'realmMappings'
+        """
+        url = URL_CLIENT_SCOPE_MAPPINGS.format(url=self.baseurl, realm=realm, id=id, target=target)
+
+        try:
+            return json.load(open_url(url, method='GET', headers=self.restheaders,
+                                      validate_certs=self.validate_certs))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain scope mappings for %s in realm %s: %s'
+                                      % (id, realm, str(e)))
+
+    def get_scope_mapping(self, id, id_client=None, target='client', realm='master'):
+        """
+        Get client scope mappings for a client or client template
+
+        :param id: id of client or client template for the scopes
+        :param id_client: id (not client_id) of the client whose client roles are to be queried; if this is not given, get realm roles instead
+        :param target: either 'client' or 'client-template'
+        :param realm: realm for the client or client template this is for
+        :return: list of role representations
+        """
+        if id_client is not None:
+            url = URL_CLIENT_SCOPE_MAPPINGS_CLIENT.format(url=self.baseurl, realm=realm, id=id,
+                                                          client=id_client, target=target)
+        else:
+            url = URL_CLIENT_SCOPE_MAPPINGS_REALM.format(url=self.baseurl, realm=realm, id=id,
+                                                         target=target)
+        try:
+            return json.load(open_url(url, method='GET', headers=self.restheaders,
+                                      validate_certs=self.validate_certs))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain scope mappings for %s in realm %s: %s'
+                                      % (id, realm, str(e)))
+
+    def get_available_roles(self, id, id_client=None, target='client', realm='master'):
+        """
+        Get roles available to be attached to a client or client template's scope
+
+        :param id: id of client or client template for the scopes
+        :param id_client: id (not client_id) of the client whose available client roles are to be queried (if this is not set, get realm roles instead)
+        :param target: either 'client' or 'client-template'
+        :param realm: realm for the client or client template this is for
+        :return: list of role representations
+        """
+        if id_client is not None:
+            url = URL_CLIENT_SCOPE_MAPPINGS_CLIENT_AVAILABLE.format(url=self.baseurl, realm=realm,
+                                                                    id=id, client=id_client,
+                                                                    target=target)
+        else:
+            url = URL_CLIENT_SCOPE_MAPPINGS_REALM_AVAILABLE.format(url=self.baseurl, realm=realm,
+                                                                   id=id, target=target)
+        try:
+            return json.load(open_url(url, method='GET', headers=self.restheaders,
+                                      validate_certs=self.validate_certs))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain scope mappings for %s in realm %s: %s'
+                                      % (id, realm, str(e)))
+
+    def create_scope_mapping(self, id, roles, id_client=None, target='client', realm='master'):
+        """
+        Creates or updates a scope mapping for a client or client template
+
+        :param id: id of client or client template for the scopes
+        :param id_client: id (not client_id) of the client whose available client roles are to be queried (if this is not set, set realm roles instead)
+        :param role: list of role representations to be added to the scope
+        :param target: either 'client' or 'client-template'
+        :param realm: realm for the client or client template this is for
+        :return: HTTPResponse on success
+        """
+        if id_client is not None:
+            url = URL_CLIENT_SCOPE_MAPPINGS_CLIENT.format(url=self.baseurl, realm=realm, id=id,
+                                                          client=id_client, target=target)
+        else:
+            url = URL_CLIENT_SCOPE_MAPPINGS_REALM.format(url=self.baseurl, realm=realm, id=id,
+                                                         target=target)
+        try:
+            return open_url(url, method='POST', headers=self.restheaders, data=json.dumps(roles),
+                            validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not create/update scope mapping for %s in realm %s: %s'
+                                      % (id, realm, str(e)))
+
+    def delete_scope_mapping(self, id, roles, id_client=None, target='client', realm='master'):
+        """
+        Deletes a scope mapping for a client or client template
+
+        :param id: id of client or client template for the scopes
+        :param id_client: id (not client_id) of the client whose available client roles are to be queried (if this is not set, delete realm roles instead)
+        :param roles: list of role representations to be deleted from the scope
+        :param target: either 'client' or 'client-template'
+        :param realm: realm for the client or client template this is for
+        :return: list of role representations
+        """
+        if id_client is not None:
+            url = URL_CLIENT_SCOPE_MAPPINGS_CLIENT.format(url=self.baseurl, realm=realm, id=id,
+                                                          client=id_client, target=target)
+        else:
+            url = URL_CLIENT_SCOPE_MAPPINGS_REALM.format(url=self.baseurl, realm=realm, id=id,
+                                                         target=target)
+        try:
+            return open_url(url, method='DELETE', headers=self.restheaders, data=json.dumps(roles),
+                            validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not create/update scope mapping for %s in realm %s: %s'
                                       % (id, realm, str(e)))
