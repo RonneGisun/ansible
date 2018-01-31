@@ -34,27 +34,27 @@ options:
             - State of the scope mapping.
             - On C(present), the scope mapping will be created or updated/extended.
             - On C(absent), the scope mapping will be removed if it exists.
-            - On C(exclusive), the scope mapping is exclusive and removes all roles not mentioned 
+            - On C(exclusive), the scope mapping is exclusive and removes all roles not mentioned
         choices: ['present', 'absent', 'exclusive']
         default: 'present'
 
     target:
         description:
             - Scope mappings can be acted upon for either clients or client mappings. Choose one
-              here; the default ist C(client).             
+              here; the default ist C(client).
         default: 'client'
         choices: ['client', 'client-template']
-        
+
     id:
         description:
-            - id of client or client template to work on scope mappings on. Either this or one of 
+            - id of client or client template to work on scope mappings on. Either this or one of
               I(client_id)/I(name) are required.
-    
+
     name:
         description:
             - name of client template to work on (if I(target) is C('clienttemplate')). Either this
               or I(id) is required.
-    
+
     client_id:
         description:
             - client_id of client to work on (if I(target) is C('client')). Either this or I(id)
@@ -66,18 +66,18 @@ options:
             - On C(realm), the scope mappings are for realm scopes. (In this case C(roles) is
               required)
             - On C(client), the scope mappings are for client scopes. (In this case C(clientroles)
-              is required)  
+              is required)
         choices: ['realm', 'client']
-        default: 'realm'        
-                    
+        default: 'realm'
+
     roles:
         description:
-            - A list of role representations (in dict-form) to be acted on. At minimum, C(name) is 
+            - A list of role representations (in dict-form) to be acted on. At minimum, C(name) is
               required. See
               U(http://www.keycloak.org/docs-api/3.3/rest-api/index.html#_rolerepresentation) for
               more fields (though they should not be required). Either C(roles) or C(clientroles) is
               required, depending on C(type).
-    
+
     clientroles:
         description:
             - A dict of lists of role representations (in dict-form) to be acted on. At minimum,
@@ -104,9 +104,9 @@ EXAMPLES = '''
     auth_keycloak_url: https://auth.example.com/auth
     auth_realm: master
     auth_username: USERNAME
-    auth_password: PASSWORD    
+    auth_password: PASSWORD
     realm: testrealm
-    state: present    
+    state: present
     client_id: testclient
     roles:
       - name: testrole01
@@ -120,18 +120,18 @@ EXAMPLES = '''
     auth_keycloak_url: https://auth.example.com/auth
     auth_realm: master
     auth_username: USERNAME
-    auth_password: PASSWORD    
+    auth_password: PASSWORD
     realm: testrealm
     target: client-template
     state: present
-    type: client    
+    type: client
     name: testclienttemplate
     clientroles:
       testclient01:
         - name: testrole01
       testclient02:
         - name: testrole02
-        
+
 - name: Remove client role testrole01 for testclient01 from testclienttemplate
   local_action:
     module: keycloak_scope
@@ -139,7 +139,7 @@ EXAMPLES = '''
     auth_keycloak_url: https://auth.example.com/auth
     auth_realm: master
     auth_username: USERNAME
-    auth_password: PASSWORD    
+    auth_password: PASSWORD
     realm: testrealm
     target: client-template
     state: absent
@@ -147,7 +147,7 @@ EXAMPLES = '''
     name: testclienttemplate
     clientroles:
       testclient01:
-        - name: testrole01              
+        - name: testrole01
 
 - name: Remove all client roles from testclient01 using exclusive and an empty client role dict
   local_action:
@@ -156,7 +156,7 @@ EXAMPLES = '''
     auth_keycloak_url: https://auth.example.com/auth
     auth_realm: master
     auth_username: USERNAME
-    auth_password: PASSWORD    
+    auth_password: PASSWORD
     realm: testrealm
     state: exclusive
     type: client
