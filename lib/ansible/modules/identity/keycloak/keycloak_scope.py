@@ -239,7 +239,7 @@ def main():
     """
     argument_spec = keycloak_argument_spec()
     meta_args = dict(
-        realm=dict(type='str', default='master'),
+        realm=dict(type='str'),
         target=dict(default='client', choices=['client', 'client-template']),
         id=dict(type='str'),
         name=dict(type='str'),
