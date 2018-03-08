@@ -19,7 +19,7 @@ module: keycloak_userstorage
 
 short_description: Allows administration of Keycloak user storage provider components via Keycloak API
 
-version_added: "2.5"
+version_added: "2.6"
 
 description:
     - This module allows the administration of Keycloak user storage provider components via the
